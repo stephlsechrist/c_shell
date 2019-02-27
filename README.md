@@ -8,4 +8,4 @@
 
 ## Run Instructions
 
-## List Extra Credits comepleted (if non attempted leave blank)
+## List Extra Credit comepleted (if not attempted leave blank)
