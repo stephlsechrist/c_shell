@@ -1,0 +1,26 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/csc415/Documents/HW3/csc415-p3-stephlsechrist/myshell.c
+string.h
+-
+unistd.h
+-
+stdlib.h
+-
+stdio.h
+-
+sys/types.h
+-
+sys/stat.h
+-
+sys/wait.h
+-
+fcntl.h
+-
+
