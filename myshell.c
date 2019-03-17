@@ -94,10 +94,19 @@ getpwd() {
 
 void
 changeDir(char **thing) {
-    if(strcmp(thing[1],"\0") == 0){
-        thing[1] = "$HOME";
+//    if(strcmp(thing[1],"\0") == 0){
+    // if statement if cd is only argument
+    // will change to home directory
+    if (thing[1] == NULL){
+        const char *homeName = getenv("HOME");
+        chdir(homeName);
     }
-    chdir(thing[1]);
+
+    else if (chdir(thing[1]) < 0){
+        printf("No such directory found.\n");
+    }
+
+    else;
 }
 
 int
