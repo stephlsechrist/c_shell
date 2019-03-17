@@ -24,25 +24,40 @@
 #define PROMPTSIZE sizeof(PROMPT)
 
 char
-**getInput() {
-    char buffer[BUFFERSIZE];
-    char **myargv = malloc(BUFFERSIZE * sizeof(char *));
+**getInput(char **arguments, char *input) {
+//    char buffer[BUFFERSIZE];
+//    char **myargv = malloc(BUFFERSIZE * sizeof(char *));
 
+//    printf("%s%s >> ",PROMPT,getenv("PWD"));
+//    fgets(buffer, BUFFERSIZE, stdin);
+//    strtok(buffer, "\n");
+//    char *status = strtok(buffer, " ");
+//    int i = 0;
+//
+//    while (status != NULL) {
+//        myargv[i] = status;
+////        printf("myargv[%d]: %s\n", i, status);
+//        i++;
+//        status = strtok(NULL, " ");
+//    }
+//
+//    myargv[i] = NULL;
+//    return myargv;
     printf(PROMPT);
-    fgets(buffer, BUFFERSIZE, stdin);
-    strtok(buffer, "\n");
-    char *status = strtok(buffer, " ");
+    fgets(input, BUFFERSIZE, stdin);
+
+    strtok(input, "\n");
+    char *status = strtok(input, " ");
     int i = 0;
 
     while (status != NULL) {
-        myargv[i] = status;
-//        printf("myargv[%d]: %s\n", i, status);
+        arguments[i] = status;
         i++;
         status = strtok(NULL, " ");
     }
 
-    myargv[i] = NULL;
-    return myargv;
+    arguments[i] = NULL;
+    return arguments;
 }
 
 int
@@ -97,57 +112,55 @@ changeDir(char **thing) {
 //    if(strcmp(thing[1],"\0") == 0){
     // if statement if cd is only argument
     // will change to home directory
-    if (thing[1] == NULL){
+    if (thing[1] == NULL) {
         const char *homeName = getenv("HOME");
         chdir(homeName);
-    }
-
-    else if (chdir(thing[1]) < 0){
-        printf("No such directory found.\n");
-    }
-
-    else;
+    } else if (chdir(thing[1]) < 0) {
+        printf("No such directory\n");
+    } else;
 }
 
 int
 main(int argc, char **argv) {
-    char **myargv;
+    char buffer[BUFFERSIZE];
+    char **myargv = malloc(BUFFERSIZE * sizeof(char *));
+
+//    char **myargv;
     int myargc;
     while (1) {
-        myargv = getInput();
+        myargv = getInput(myargv, buffer);
         if (strcmp(myargv[0], "exit") == 0) {
             break;
         }
         myargc = getArgCount(myargv);
 //    printf("Number of arguments: %d",myargc);
-//    executeArgs(myargv);
 
 
-        // wanted to put in separate execute function. haven't figured out yet
         if (strcmp(myargv[0], "pwd") == 0) {
             getpwd();
-        } else if (strcmp(myargv[0], "cd") == 0){
+        } else if (strcmp(myargv[0], "cd") == 0) {
             changeDir(myargv);
-        }
-        else {
-            pid_t pid = fork();
-            if (pid < 0) {
-                perror("Fork failed\n");
-            }
-                // inside child process
-            else if (pid == 0) {
-                int exStatus = execvp(myargv[0], myargv);
-                if (exStatus < 0) {
-                    perror("There was an error during execution");
-                    exit(96);
-//            executeArgs(myargv);
-                }
-            }
-
-                // back in parent process
-            else {
-                wait(0);
-            }
+            // wanted to put in separate execute function. haven't figured out yet
+        } else {
+            executeArgs(myargv);
+//            pid_t pid = fork();
+//            if (pid < 0) {
+//                perror("Fork failed\n");
+//            }
+//                // inside child process
+//            else if (pid == 0) {
+//                int exStatus = execvp(myargv[0], myargv);
+//                if (exStatus < 0) {
+//                    perror("There was an error during execution");
+//                    exit(96);
+////            executeArgs(myargv);
+//                }
+//            }
+//
+//                // back in parent process
+//            else {
+//                wait(0);
+//            }
         }
     }
     return 0;
