@@ -16,12 +16,14 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <fcntl.h>
+#include <stdbool.h>
 
 /* CANNOT BE CHANGED */
 #define BUFFERSIZE 256
 /* --------------------*/
 #define PROMPT "myShell >> "
 #define PROMPTSIZE sizeof(PROMPT)
+#define BUFF_MAX 21
 
 char
 **getInput(char **arguments, char *input) {
@@ -70,34 +72,137 @@ getArgCount(char **currArgs) {
     return argCount;
 }
 
-// below does not work; permission always denied.
+// most of code taken from my HW2: filecopy.c
+// takes a file from user input
+// and copies into a file specified by the user
+// in the current working directory.
+// If the file to be copied to does not exist,
+// it is created with read and write permissions.
+// If the file to be copied to does exist, it is
+// overwritten with the new content.
+//void
+//outputRedirect(char sourceFile[255]) {
+//    char buffer[BUFF_MAX];
+////    char sourceFile[255];
+//    char destFile[255];
+//
+//    int fout;
+//    int destfd;
+//
+//    fout = open(sourceFile, O_RDONLY);
+//    if (fout < 0) {
+//        perror("Open file to be copied failed");
+//        exit(77);
+//    }
+//
+//    destfd = open(destFile, O_CREAT | O_WRONLY | O_TRUNC, 0666);
+//    if (destfd < 0) {
+//        perror("Open file to be copied to failed");
+//        exit(77);
+//    }
+//
+//    ssize_t bytesRead = read(sourcefd, buffer, sizeof(buffer));
+//    while (bytesRead > 0) {
+//        ssize_t bytesCopied = write(destfd, buffer, (size_t) bytesRead);
+//        if (bytesCopied != bytesRead) {
+//            perror("There was an error during copy");
+//            exit(11);
+//        }
+//        bytesRead = read(sourcefd, buffer, sizeof(buffer));
+//    }
+//
+//    if (bytesRead < 0) {
+//        perror("There was an error during copy");
+//        exit(11);
+//    }
+//
+//    close(sourcefd);
+//    close(destfd);
+//}
+
+// this is where commands will execute using execvp
+// if input or ouput redirection is found,
+// the child process will call other methods
+// relied heavily on stack overflow to implement redirection
+// https://stackoverflow.com/questions/11515399/implementing-shell-in-c-and-need-help-handling-input-output-redirection
 void
 executeArgs(char **currArgs) {
+    // int flags set to 0 for false by default
+    // flag for <
+    int inRedirect = 0;
+    // flag for >
+    int outRedirect = 0;
+    // flag for >>
+    int outRedirectCat = 0;
+
     pid_t pid = fork();
     if (pid < 0)
         perror("Fork failed\n");
         // in parent process
     else if (pid > 0) {
-
         wait(0);
     }
         // in child process
+        // here is where I will implement input or output redirection
     else {
+        char inFile[BUFFERSIZE];
+        char outFile[BUFFERSIZE];
+
+        for (int i = 0; currArgs[i] != NULL; i++) {
+            if (strcmp(currArgs[i], ">") == 0 || strcmp(currArgs[i], ">>") == 0) {
+                if (strcmp(currArgs[i], ">>") == 0) {
+                    // concatenate instead of overwrite
+                    outRedirectCat = 1;
+                }
+                strcpy(outFile, currArgs[i + 1]);
+                // change > to NULL
+                currArgs[i] = NULL;
+                outRedirect = 1;
+            }
+
+            else if (strcmp(currArgs[i], "<") == 0){
+                strcpy(inFile, currArgs[i+1]);
+                currArgs[i] = NULL;
+                inRedirect = 1;
+            }
+        }
+
+        if (outRedirect) {
+            int outputfd;
+            if (outRedirectCat) {
+                outputfd = open(outFile, O_WRONLY | O_CREAT | O_APPEND, 0666);
+            } else {
+                outputfd = open(outFile, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+            }
+            if (outputfd < 0) {
+                perror("Open file to be copied to failed\n");
+                exit(5);
+            }
+
+            dup2(outputfd, STDOUT_FILENO);
+            close(outputfd);
+        }
+
+        if (inRedirect){
+            int inputfd;
+            inputfd = open(inFile, O_RDONLY);
+            dup2(inputfd, STDIN_FILENO);
+            close(inputfd);
+            if (inputfd < 0 ){
+                perror("File not found");
+                exit(2);
+            }
+        }
+
 //        printf("%s\n", currArgs[0]);
         execvp(currArgs[0], currArgs);
-        perror("There was an error in executeArgs");
-        exit(96);
-//        int exStatus = execvp(args[0], args);
-//        if (exStatus < 0) {
-//            perror("There was an error during execution");
-//            exit(96);
-//        }
+        if (strcmp(currArgs[0], "\n") == 0){
+            exit(127);
+        }
+        printf("%s: command not found\n", currArgs[0]);
+        exit(127);
     }
 
-}
-
-void
-inputRedirect(char **currArgs) {
 }
 
 void
@@ -135,7 +240,6 @@ main(int argc, char **argv) {
         myargc = getArgCount(myargv);
 //    printf("Number of arguments: %d",myargc);
 
-
         if (strcmp(myargv[0], "pwd") == 0) {
             getpwd();
         } else if (strcmp(myargv[0], "cd") == 0) {
@@ -153,7 +257,6 @@ main(int argc, char **argv) {
 //                if (exStatus < 0) {
 //                    perror("There was an error during execution");
 //                    exit(96);
-////            executeArgs(myargv);
 //                }
 //            }
 //
