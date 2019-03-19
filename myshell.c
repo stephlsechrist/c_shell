@@ -27,24 +27,6 @@
 
 char
 **getInput(char **arguments, char *input) {
-//    char buffer[BUFFERSIZE];
-//    char **myargv = malloc(BUFFERSIZE * sizeof(char *));
-
-//    printf("%s%s >> ",PROMPT,getenv("PWD"));
-//    fgets(buffer, BUFFERSIZE, stdin);
-//    strtok(buffer, "\n");
-//    char *status = strtok(buffer, " ");
-//    int i = 0;
-//
-//    while (status != NULL) {
-//        myargv[i] = status;
-////        printf("myargv[%d]: %s\n", i, status);
-//        i++;
-//        status = strtok(NULL, " ");
-//    }
-//
-//    myargv[i] = NULL;
-//    return myargv;
     printf(PROMPT);
     fgets(input, BUFFERSIZE, stdin);
 
@@ -225,20 +207,66 @@ changeDir(char **thing) {
     } else;
 }
 
+// was not familiar with & operator prior to this project
+// implemented it based on description from
+// https://bashitout.com/2013/05/18/Ampersands-on-the-command-line.html
+// sargv passed in should be parsed already, separating what is before the pipe from the rest
+int
+subshell(char **sargv){
+//    sargv = malloc(BUFFERSIZE * sizeof(char *));
+
+//    sargc = getArgCount(sargv);
+    printf("in subshell: %s", sargv[0]);
+    printf("before execute in subshell\n");
+    executeArgs(sargv);
+    printf("after execute in subshell\n");
+
+    return 0;
+}
+
 int
 main(int argc, char **argv) {
     char buffer[BUFFERSIZE];
     char **myargv = malloc(BUFFERSIZE * sizeof(char *));
 
 //    char **myargv;
+    // int flag default is false. changed to nonzero in for loop
+    int ampLoc = 0;
     int myargc;
+
     while (1) {
         myargv = getInput(myargv, buffer);
+
+        for (int i = 0; myargv[i] != NULL; i++){
+            if (strcmp(myargv[i], "&") == 0){
+                ampLoc = i;
+                printf("Ampersand location at index %d\n",ampLoc);
+//                myargv[i] = NULL;
+            }
+        }
+
         if (strcmp(myargv[0], "exit") == 0) {
             break;
         }
         myargc = getArgCount(myargv);
 //    printf("Number of arguments: %d",myargc);
+
+        if (ampLoc){
+            printf("Entered ampLoc not zero if statement\n");
+            char **ampCommand = malloc(BUFFERSIZE * sizeof(char *));
+            printf("Allocated memory for ampcommand\n");
+            for (int i = 0; i < ampLoc; i++){
+                printf("in for loop: i = %d\n",i);
+                printf("Entered for loop to try to parse out &");
+                strcpy(ampCommand[i], myargv[i]);
+                printf("Copying %s to ampCommand\n", myargv[i]);
+                printf("ampCommand[%d] now has %s\n",i,ampCommand[i]);
+            }
+
+            if(subshell(ampCommand) == 0 ){
+                printf("it worked");
+            }
+        }
 
         if (strcmp(myargv[0], "pwd") == 0) {
             getpwd();
