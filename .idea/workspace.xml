@@ -12,6 +12,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e6ddb3eb-c4da-414e-8a34-750afcb7dd9f" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/myshell" beforeDir="false" afterPath="$PROJECT_DIR$/myshell" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/myshell.c" beforeDir="false" afterPath="$PROJECT_DIR$/myshell.c" afterDir="false" />
     </list>
@@ -28,8 +29,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/myshell.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="367">
-              <caret line="260" column="39" selection-start-line="260" selection-start-column="39" selection-end-line="260" selection-end-column="39" />
+            <state relative-caret-position="322">
+              <caret line="257" column="42" selection-start-line="257" selection-start-column="42" selection-end-line="257" selection-end-column="42" />
               <folding>
                 <element signature="e#596#615#0" expanded="true" />
               </folding>
@@ -49,7 +50,7 @@
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="1">
+  <component name="ProjectFrameBounds">
     <option name="x" value="960" />
     <option name="width" value="960" />
     <option name="height" value="917" />
@@ -110,12 +111,12 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1552417455095</updated>
-      <workItem from="1552417457391" duration="51288000" />
+      <workItem from="1552417457391" duration="52331000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="51288000" />
+    <option name="totallyTimeSpent" value="52331000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="960" y="0" width="960" height="917" extended-state="0" />
@@ -149,8 +150,8 @@
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/myshell.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="367">
-          <caret line="260" column="39" selection-start-line="260" selection-start-column="39" selection-end-line="260" selection-end-column="39" />
+        <state relative-caret-position="322">
+          <caret line="257" column="42" selection-start-line="257" selection-start-column="42" selection-end-line="257" selection-end-column="42" />
           <folding>
             <element signature="e#596#615#0" expanded="true" />
           </folding>

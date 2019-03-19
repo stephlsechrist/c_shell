@@ -216,7 +216,7 @@ subshell(char **sargv){
 //    sargv = malloc(BUFFERSIZE * sizeof(char *));
 
 //    sargc = getArgCount(sargv);
-    printf("in subshell: %s", sargv[0]);
+    printf("in subshell: %s\n", sargv[0]);
     printf("before execute in subshell\n");
     executeArgs(sargv);
     printf("after execute in subshell\n");
@@ -231,10 +231,10 @@ main(int argc, char **argv) {
 
 //    char **myargv;
     // int flag default is false. changed to nonzero in for loop
-    int ampLoc = 0;
     int myargc;
 
     while (1) {
+        int ampLoc = -1;
         myargv = getInput(myargv, buffer);
 
         for (int i = 0; myargv[i] != NULL; i++){
@@ -251,24 +251,25 @@ main(int argc, char **argv) {
         myargc = getArgCount(myargv);
 //    printf("Number of arguments: %d",myargc);
 
-        if (ampLoc){
-            printf("Entered ampLoc not zero if statement\n");
+        if (ampLoc >= 0){
+            printf("Entered ampLoc if statement\n");
             char **ampCommand = malloc(BUFFERSIZE * sizeof(char *));
             printf("Allocated memory for ampcommand\n");
-            for (int i = 0; i < ampLoc; i++){
+            for (int i = ampLoc; myargv[i] != NULL; i++){
                 printf("in for loop: i = %d\n",i);
-                printf("Entered for loop to try to parse out &");
-                strcpy(ampCommand[i], myargv[i]);
-                printf("Copying %s to ampCommand\n", myargv[i]);
-                printf("ampCommand[%d] now has %s\n",i,ampCommand[i]);
+                printf("Entered for loop to try to parse out &\n");
+//                strcpy(ampCommand[i], myargv[i]);
+                printf("Overwriting %s\n", myargv[i]);
+                myargv[i] = NULL;
+//                printf("ampCommand[%d] now has %s\n",i,ampCommand[i]);
             }
 
-            if(subshell(ampCommand) == 0 ){
-                printf("it worked");
+            if(subshell(myargv) == 0 ){
+                printf("it worked\n");
             }
         }
 
-        if (strcmp(myargv[0], "pwd") == 0) {
+        else if (strcmp(myargv[0], "pwd") == 0) {
             getpwd();
         } else if (strcmp(myargv[0], "cd") == 0) {
             changeDir(myargv);
