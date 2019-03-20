@@ -71,6 +71,9 @@ getArgCount(char **currArgs) {
 // the child process will call other methods
 // relied heavily on stack overflow to implement redirection
 // https://stackoverflow.com/questions/11515399/implementing-shell-in-c-and-need-help-handling-input-output-redirection
+//
+// wanted to do all the checking for built-ins like cd, pwd, or exit in this function, but couldn't get it to work
+// wasted too much time on it
 void
 executeArgs(char **currArgs) {
     // int flags set to 0 for false by default
@@ -84,7 +87,7 @@ executeArgs(char **currArgs) {
     pid_t pid = fork();
     if (pid < 0)
         perror("Fork failed\n");
-    // in parent process
+        // in parent process
     else if (pid > 0) {
         wait(0);
     }
@@ -120,7 +123,7 @@ executeArgs(char **currArgs) {
             if (outRedirectCat) {
                 outputfd = open(outFile, O_WRONLY | O_CREAT | O_APPEND, 0666);
             }
-            // truncate
+                // truncate
             else {
                 outputfd = open(outFile, O_WRONLY | O_CREAT | O_TRUNC, 0666);
             }
@@ -155,13 +158,11 @@ executeArgs(char **currArgs) {
         if (strcmp(currArgs[0], "\n") == 0) {
             exit(127);
         }
-
         // only reached if command not pwd, cd, exit, or
         // any command recognized by execvp
         printf("%s: command not found\n", currArgs[0]);
         exit(127);
     }
-
 }
 
 // called when pwd is typed into prompt
@@ -203,7 +204,7 @@ subshell(char **pargv) {
         executeArgs(pargv);
         wait(0);
     }
-    // in child
+        // in child
     else if (pid == 0) {
         if (strcmp(pargv[0], "pwd") == 0) {
             getpwd();
@@ -224,6 +225,40 @@ subshell(char **pargv) {
 
     return 0;
 }
+
+// ran out of time to fully implement piping
+// i got so far as to separate the left side of the pipe from the right
+// since I don't have anything implemented, I at least displayed the
+// separation to the user
+void
+pipeFunction(char **passedArgs, int pipeAt) {
+    char **leftSide = malloc(BUFFERSIZE * sizeof(char *));
+    char **rightSide = malloc(BUFFERSIZE * sizeof(char *));
+    int i = 0;
+
+
+    while (i < pipeAt) {
+        leftSide[i]= passedArgs[i];
+        printf("left side: %s ",leftSide[i]);
+        i++;
+    }
+    putchar('\n');
+    leftSide[pipeAt] = NULL;
+    i++;
+
+    int j = 0;
+    while (passedArgs[i] != NULL){
+        rightSide[j] = passedArgs[i];
+        printf("right side: %s ",rightSide[j]);
+        i++;
+        j++;
+    }
+    putchar('\n');
+    rightSide[i] = NULL;
+
+//    passedArgs[pipeAt] = NULL;
+}
+
 
 int
 main(int argc, char **argv) {
@@ -249,6 +284,12 @@ main(int argc, char **argv) {
             if (strcmp(myargv[i], "&") == 0) {
                 ampLoc = i;
             }
+
+            if (strcmp(myargv[i], "|") == 0) {
+                pipeLoc = i;
+                printf("Location of pipe: %d\n",i);
+            }
+
         }
 
         // if exit typed into prompt, break to exit myshell
@@ -274,18 +315,23 @@ main(int argc, char **argv) {
             else
                 perror("& Operator Failure");
         }
+
+        // did not fully implement piping
+        else if (pipeLoc >= 0) {
+            pipeFunction(myargv, pipeLoc);
+        }
+
         // pwd built-in
         // if pwd typed into prompt, call getpwd()
         else if (strcmp(myargv[0], "pwd") == 0) {
             getpwd();
         }
-        // cd built-in
-        // if cd typed into prompt, call changeDir()
+            // cd built-in
+            // if cd typed into prompt, call changeDir()
         else if (strcmp(myargv[0], "cd") == 0) {
             changeDir(myargv);
-            // wanted to put in separate execute function. haven't figured out yet
         }
-        // for all else commands, execute as normal by calling executeArgs()
+            // for all else commands, execute as normal by calling executeArgs()
         else {
             executeArgs(myargv);
         }

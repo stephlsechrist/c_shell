@@ -29,10 +29,11 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/myshell.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="645">
-              <caret line="43" column="14" lean-forward="true" selection-start-line="43" selection-start-column="14" selection-end-line="43" selection-end-column="14" />
+            <state relative-caret-position="189">
+              <caret line="255" column="32" lean-forward="true" selection-start-line="255" selection-start-column="32" selection-end-line="255" selection-end-column="32" />
               <folding>
                 <element signature="e#596#615#0" expanded="true" />
+                <marker date="1553064855375" expanded="true" signature="7813:8159" ph="..." />
               </folding>
             </state>
           </provider>
@@ -51,8 +52,8 @@
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="960" />
-    <option name="width" value="960" />
+    <option name="x" value="881" />
+    <option name="width" value="1039" />
     <option name="height" value="917" />
   </component>
   <component name="ProjectView">
@@ -111,15 +112,15 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1552417455095</updated>
-      <workItem from="1552417457391" duration="58095000" />
+      <workItem from="1552417457391" duration="65385000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="58095000" />
+    <option name="totallyTimeSpent" value="65385000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="960" y="0" width="960" height="917" extended-state="0" />
+    <frame x="881" y="0" width="1039" height="917" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Favorites" side_tool="true" />
@@ -150,10 +151,11 @@
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/myshell.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="645">
-          <caret line="43" column="14" lean-forward="true" selection-start-line="43" selection-start-column="14" selection-end-line="43" selection-end-column="14" />
+        <state relative-caret-position="189">
+          <caret line="255" column="32" lean-forward="true" selection-start-line="255" selection-start-column="32" selection-end-line="255" selection-end-column="32" />
           <folding>
             <element signature="e#596#615#0" expanded="true" />
+            <marker date="1553064855375" expanded="true" signature="7813:8159" ph="..." />
           </folding>
         </state>
       </provider>
