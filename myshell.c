@@ -1,11 +1,12 @@
-/****************************************************************
- * Name        :  Stephanie Sechrist                            *
- * Class       :  CSC 415                                       *
- * Date        :                                                *
- * Description :  Writing a simple bash shell program           *
- *                that will execute simple commands. The main   *
- *                goal of the assignment is working with        *
- *                fork, pipes and exec system calls.            *
+/*****************************************************************
+ * Name         :  Stephanie Sechrist                            *
+ * Class        :  CSC 415                                       *
+ * Date Due     :  March 19, 2019                                *
+ * Last Modified:  March 19, 2019                                *
+ * Description  :  Writing a simple bash shell program           *
+ *                 that will execute simple commands. The main   *
+ *                 goal of the assignment is working with        *
+ *                 fork, pipes and exec system calls.            *
  ****************************************************************/
 
 #include <string.h>
@@ -25,6 +26,14 @@
 #define PROMPTSIZE sizeof(PROMPT)
 #define BUFF_MAX 21
 
+// prompts user
+// parses the string entered by the user with strtok()
+// first, removes new line character
+// tokenizes until NULL reached
+// saves each token into **arguments
+// NULL terminates **arguments
+// called from main() so returns **arguments to main to
+// initialize myargv
 char
 **getInput(char **arguments, char *input) {
     printf(PROMPT);
@@ -40,10 +49,13 @@ char
         status = strtok(NULL, " ");
     }
 
+    // null terminate 2d array
     arguments[i] = NULL;
     return arguments;
 }
 
+// gets argument count of what was entered at prompt; called by main
+// to initialize myargc; never used
 int
 getArgCount(char **currArgs) {
     int argCount = 1;
@@ -53,54 +65,6 @@ getArgCount(char **currArgs) {
 
     return argCount;
 }
-
-// most of code taken from my HW2: filecopy.c
-// takes a file from user input
-// and copies into a file specified by the user
-// in the current working directory.
-// If the file to be copied to does not exist,
-// it is created with read and write permissions.
-// If the file to be copied to does exist, it is
-// overwritten with the new content.
-//void
-//outputRedirect(char sourceFile[255]) {
-//    char buffer[BUFF_MAX];
-////    char sourceFile[255];
-//    char destFile[255];
-//
-//    int fout;
-//    int destfd;
-//
-//    fout = open(sourceFile, O_RDONLY);
-//    if (fout < 0) {
-//        perror("Open file to be copied failed");
-//        exit(77);
-//    }
-//
-//    destfd = open(destFile, O_CREAT | O_WRONLY | O_TRUNC, 0666);
-//    if (destfd < 0) {
-//        perror("Open file to be copied to failed");
-//        exit(77);
-//    }
-//
-//    ssize_t bytesRead = read(sourcefd, buffer, sizeof(buffer));
-//    while (bytesRead > 0) {
-//        ssize_t bytesCopied = write(destfd, buffer, (size_t) bytesRead);
-//        if (bytesCopied != bytesRead) {
-//            perror("There was an error during copy");
-//            exit(11);
-//        }
-//        bytesRead = read(sourcefd, buffer, sizeof(buffer));
-//    }
-//
-//    if (bytesRead < 0) {
-//        perror("There was an error during copy");
-//        exit(11);
-//    }
-//
-//    close(sourcefd);
-//    close(destfd);
-//}
 
 // this is where commands will execute using execvp
 // if input or ouput redirection is found,
@@ -120,7 +84,7 @@ executeArgs(char **currArgs) {
     pid_t pid = fork();
     if (pid < 0)
         perror("Fork failed\n");
-        // in parent process
+    // in parent process
     else if (pid > 0) {
         wait(0);
     }
@@ -130,6 +94,7 @@ executeArgs(char **currArgs) {
         char inFile[BUFFERSIZE];
         char outFile[BUFFERSIZE];
 
+        // look for <, >, >>
         for (int i = 0; currArgs[i] != NULL; i++) {
             if (strcmp(currArgs[i], ">") == 0 || strcmp(currArgs[i], ">>") == 0) {
                 if (strcmp(currArgs[i], ">>") == 0) {
@@ -141,19 +106,22 @@ executeArgs(char **currArgs) {
                 currArgs[i] = NULL;
                 outRedirect = 1;
             }
-
-            else if (strcmp(currArgs[i], "<") == 0){
-                strcpy(inFile, currArgs[i+1]);
+            else if (strcmp(currArgs[i], "<") == 0) {
+                strcpy(inFile, currArgs[i + 1]);
                 currArgs[i] = NULL;
                 inRedirect = 1;
             }
         }
 
+        // logic from filecopy program (last assignment)
         if (outRedirect) {
             int outputfd;
+            // concatenate instead of truncate
             if (outRedirectCat) {
                 outputfd = open(outFile, O_WRONLY | O_CREAT | O_APPEND, 0666);
-            } else {
+            }
+            // truncate
+            else {
                 outputfd = open(outFile, O_WRONLY | O_CREAT | O_TRUNC, 0666);
             }
             if (outputfd < 0) {
@@ -165,28 +133,39 @@ executeArgs(char **currArgs) {
             close(outputfd);
         }
 
-        if (inRedirect){
+        // logic from filecopy program (last assignment)
+        if (inRedirect) {
             int inputfd;
             inputfd = open(inFile, O_RDONLY);
             dup2(inputfd, STDIN_FILENO);
             close(inputfd);
-            if (inputfd < 0 ){
+            if (inputfd < 0) {
                 perror("File not found");
                 exit(2);
             }
         }
 
 //        printf("%s\n", currArgs[0]);
+
+        // execute !
         execvp(currArgs[0], currArgs);
-        if (strcmp(currArgs[0], "\n") == 0){
+
+        // if user presses enter at prompt, exit execute so that
+        // prompt displayed again in main
+        if (strcmp(currArgs[0], "\n") == 0) {
             exit(127);
         }
+
+        // only reached if command not pwd, cd, exit, or
+        // any command recognized by execvp
         printf("%s: command not found\n", currArgs[0]);
         exit(127);
     }
 
 }
 
+// called when pwd is typed into prompt
+// implements built-in pwd for myshell using getcwd()
 void
 getpwd() {
     char tempwd[BUFFERSIZE];
@@ -194,32 +173,54 @@ getpwd() {
     printf("%s\n", tempwd);
 }
 
+// called when cd is typed into prompt
+// implements built-in cd for myshell using chdir()
 void
-changeDir(char **thing) {
-//    if(strcmp(thing[1],"\0") == 0){
+changeDir(char **passedArgs) {
     // if statement if cd is only argument
     // will change to home directory
-    if (thing[1] == NULL) {
+    if (passedArgs[1] == NULL) {
         const char *homeName = getenv("HOME");
         chdir(homeName);
-    } else if (chdir(thing[1]) < 0) {
+    }
+    else if (chdir(passedArgs[1]) < 0) {
         printf("No such directory\n");
-    } else;
+    }
+    else;
 }
 
 // was not familiar with & operator prior to this project
 // implemented it based on description from
 // https://bashitout.com/2013/05/18/Ampersands-on-the-command-line.html
-// sargv passed in should be parsed already, separating what is before the pipe from the rest
+// pargv passed in should be parsed already, separating command before &
 int
-subshell(char **sargv){
-//    sargv = malloc(BUFFERSIZE * sizeof(char *));
-
-//    sargc = getArgCount(sargv);
-    printf("in subshell: %s\n", sargv[0]);
-    printf("before execute in subshell\n");
-    executeArgs(sargv);
-    printf("after execute in subshell\n");
+subshell(char **pargv) {
+    char buf[BUFFERSIZE];
+    pid_t pid = fork();
+    // in parent
+    if (pid > 0) {
+        pargv = getInput(pargv, buf);
+        executeArgs(pargv);
+        wait(0);
+    }
+    // in child
+    else if (pid == 0) {
+        if (strcmp(pargv[0], "pwd") == 0) {
+            getpwd();
+        }
+        else if (strcmp(pargv[0], "cd") == 0) {
+            changeDir(pargv);
+            // wanted to put in separate execute function. haven't figured out yet
+        }
+        else {
+            executeArgs(pargv);
+        }
+        exit(127);
+    }
+    else {
+        perror("Fork failed");
+        return -1;
+    }
 
     return 0;
 }
@@ -228,71 +229,65 @@ int
 main(int argc, char **argv) {
     char buffer[BUFFERSIZE];
     char **myargv = malloc(BUFFERSIZE * sizeof(char *));
+    // processCount used for & operator
+    int processCount = 0;
 
 //    char **myargv;
     // int flag default is false. changed to nonzero in for loop
     int myargc;
 
     while (1) {
+        // location flag for ampersand
         int ampLoc = -1;
+        // location flag for pipe
+        int pipeLoc = -1;
+
         myargv = getInput(myargv, buffer);
 
-        for (int i = 0; myargv[i] != NULL; i++){
-            if (strcmp(myargv[i], "&") == 0){
+        // for loop to look for pipe and ampersand if present
+        for (int i = 0; myargv[i] != NULL; i++) {
+            if (strcmp(myargv[i], "&") == 0) {
                 ampLoc = i;
-                printf("Ampersand location at index %d\n",ampLoc);
-//                myargv[i] = NULL;
             }
         }
 
+        // if exit typed into prompt, break to exit myshell
         if (strcmp(myargv[0], "exit") == 0) {
             break;
         }
+
+        // initialize myargc; don't use anywhere though
         myargc = getArgCount(myargv);
-//    printf("Number of arguments: %d",myargc);
 
-        if (ampLoc >= 0){
-            printf("Entered ampLoc if statement\n");
-            char **ampCommand = malloc(BUFFERSIZE * sizeof(char *));
-            printf("Allocated memory for ampcommand\n");
-            for (int i = ampLoc; myargv[i] != NULL; i++){
-                printf("in for loop: i = %d\n",i);
-                printf("Entered for loop to try to parse out &\n");
-//                strcpy(ampCommand[i], myargv[i]);
-                printf("Overwriting %s\n", myargv[i]);
+        // first time encountering & operator, so I tried to mimic what
+        // I saw in the linux terminal.
+        // if statement entered if & found in previous for loop
+        if (ampLoc >= 0) {
+            for (int i = ampLoc; myargv[i] != NULL; i++) {
                 myargv[i] = NULL;
-//                printf("ampCommand[%d] now has %s\n",i,ampCommand[i]);
             }
 
-            if(subshell(myargv) == 0 ){
-                printf("it worked\n");
+            if (subshell(myargv) == 0) {
+                processCount++;
+                printf("\n[%d]+\tDone\t%s\n", processCount, myargv[0]);
             }
+            else
+                perror("& Operator Failure");
         }
-
+        // pwd built-in
+        // if pwd typed into prompt, call getpwd()
         else if (strcmp(myargv[0], "pwd") == 0) {
             getpwd();
-        } else if (strcmp(myargv[0], "cd") == 0) {
+        }
+        // cd built-in
+        // if cd typed into prompt, call changeDir()
+        else if (strcmp(myargv[0], "cd") == 0) {
             changeDir(myargv);
             // wanted to put in separate execute function. haven't figured out yet
-        } else {
+        }
+        // for all else commands, execute as normal by calling executeArgs()
+        else {
             executeArgs(myargv);
-//            pid_t pid = fork();
-//            if (pid < 0) {
-//                perror("Fork failed\n");
-//            }
-//                // inside child process
-//            else if (pid == 0) {
-//                int exStatus = execvp(myargv[0], myargv);
-//                if (exStatus < 0) {
-//                    perror("There was an error during execution");
-//                    exit(96);
-//                }
-//            }
-//
-//                // back in parent process
-//            else {
-//                wait(0);
-//            }
         }
     }
     return 0;
