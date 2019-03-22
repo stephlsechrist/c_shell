@@ -2,7 +2,8 @@
  * Name         :  Stephanie Sechrist                            *
  * Class        :  CSC 415                                       *
  * Date Due     :  March 19, 2019                                *
- * Last Modified:  March 19, 2019                                *
+ * Date Due Ext :  March 22, 2019                                *
+ * Last Modified:  March 22, 2019                                *
  * Description  :  Writing a simple bash shell program           *
  *                 that will execute simple commands. The main   *
  *                 goal of the assignment is working with        *
@@ -194,6 +195,8 @@ changeDir(char **passedArgs) {
 // implemented it based on description from
 // https://bashitout.com/2013/05/18/Ampersands-on-the-command-line.html
 // pargv passed in should be parsed already, separating command before &
+// only works if user enters command with & on one line, hits enter
+// and enters second command on next line
 int
 subshell(char **pargv) {
     char buf[BUFFERSIZE];
@@ -211,7 +214,6 @@ subshell(char **pargv) {
         }
         else if (strcmp(pargv[0], "cd") == 0) {
             changeDir(pargv);
-            // wanted to put in separate execute function. haven't figured out yet
         }
         else {
             executeArgs(pargv);
@@ -226,37 +228,87 @@ subshell(char **pargv) {
     return 0;
 }
 
-// ran out of time to fully implement piping
-// i got so far as to separate the left side of the pipe from the right
-// since I don't have anything implemented, I at least displayed the
-// separation to the user
+// collaborated with Tom Sechrist
+// Also relied heavily on example from Souza posted on iLearn
 void
 pipeFunction(char **passedArgs, int pipeAt) {
     char **leftSide = malloc(BUFFERSIZE * sizeof(char *));
     char **rightSide = malloc(BUFFERSIZE * sizeof(char *));
     int i = 0;
-
+    int status;
 
     while (i < pipeAt) {
-        leftSide[i]= passedArgs[i];
-        printf("left side: %s ",leftSide[i]);
+        leftSide[i] = passedArgs[i];
         i++;
     }
-    putchar('\n');
     leftSide[pipeAt] = NULL;
+
     i++;
 
     int j = 0;
-    while (passedArgs[i] != NULL){
+    while (passedArgs[i] != NULL) {
         rightSide[j] = passedArgs[i];
-        printf("right side: %s ",rightSide[j]);
         i++;
         j++;
     }
-    putchar('\n');
     rightSide[i] = NULL;
 
-//    passedArgs[pipeAt] = NULL;
+    pid_t pid;
+    // create pipe fd
+    int pipe_fd[2];
+    // from man page:
+    // pipefd[0] refers to the write end of the pipe
+    // pipefd[1] refers to the read end of the pipe
+    // data written to the write end is buffered by
+    // kernel until it is read from read end of pipe
+    // return value 0 on success, -1 error
+    pipe(pipe_fd);
+
+    pid = fork();
+    // child
+    // execute right side of pipe into write end of pipe
+    if (pid == 0) {
+        close(0);
+        dup(pipe_fd[0]);
+        close(pipe_fd[0]);
+        close(pipe_fd[1]);
+        execvp(rightSide[0], rightSide);
+        perror("Error on right side");
+        exit(127);
+    }
+
+    else if (pid < 0) {
+        perror("Error while forking");
+        exit(127);
+    }
+    //parent
+    else {
+        pid = fork();
+        // child
+        // execute left side of pipe using info read from read end of pipe
+        // writes to stdout
+        if (pid == 0) {
+            close(1);
+            dup(pipe_fd[1]);
+            close(pipe_fd[0]);
+            close(pipe_fd[1]);
+            execvp(leftSide[0], leftSide);
+            perror("Error on left side");
+            exit(127);
+        }
+
+        else if (pid < 0) {
+            perror("Error while forking");
+            exit(127);
+        }
+        // parent parent
+        else {
+            close(pipe_fd[0]);
+            close(pipe_fd[1]);
+            waitpid(pid, &status, 0);
+        }
+    }
+//    executeArgs(rightSide);
 }
 
 
@@ -272,6 +324,8 @@ main(int argc, char **argv) {
     int myargc;
 
     while (1) {
+        // need for pipefunction
+        wait(NULL);
         // location flag for ampersand
         int ampLoc = -1;
         // location flag for pipe
@@ -287,7 +341,7 @@ main(int argc, char **argv) {
 
             if (strcmp(myargv[i], "|") == 0) {
                 pipeLoc = i;
-                printf("Location of pipe: %d\n",i);
+//                printf("Location of pipe: %d\n", i);
             }
 
         }
@@ -316,13 +370,13 @@ main(int argc, char **argv) {
                 perror("& Operator Failure");
         }
 
-        // did not fully implement piping
+            // did not fully implement piping
         else if (pipeLoc >= 0) {
             pipeFunction(myargv, pipeLoc);
         }
 
-        // pwd built-in
-        // if pwd typed into prompt, call getpwd()
+            // pwd built-in
+            // if pwd typed into prompt, call getpwd()
         else if (strcmp(myargv[0], "pwd") == 0) {
             getpwd();
         }

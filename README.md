@@ -18,6 +18,13 @@ To run the program in the terminal, type
 ./myshell
 ```
 The shell is basic and assumes all commands will be separated by a space. It is case sensitive, just
-like Linux terminal. cd and pwd are built-ins for the shell, and unfortunately, I ran out of time to
-implement piping. & operator sort of works. To exit the shell, type exit.
+like Linux terminal. cd and pwd are built-ins for the shell.
+
+The & operator I have implemented only works if the & is at the end of the line and next command is 
+on a new line. Example:
+myshell >> test &
+myshell >> test
+
+Pipe implemented; collaborated with Thoams Sechrist and used Souza's example on iLearn as well.
+
 ## List Extra Credit comepleted (if not attempted leave blank)
