@@ -2,8 +2,6 @@
 
 ## Student Name: Stephanie Sechrist
 
-## Student ID: 918679078
-
 ## Build Instructions
 This program was built on a Linux Virtual Machine in CLion 2018.3.4 in C language.
 Clone the repo into your local directory. In Linux terminal in the repo, type
